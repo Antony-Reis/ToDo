@@ -1,0 +1,21 @@
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: toDoMongoDB
+    restart: on-failure
+    environment:
+      MONGO_INITDB_DATABASE: todo
+      MONGO_INITDB_ROOT_PASSWORD: mongodb
+      MONGO_INITDB_ROOT_USERNAME: mongodb
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - todo
+volumes:
+  mongodb_data:
+    driver: local
+networks:
+  todo:
+    driver: bridge
