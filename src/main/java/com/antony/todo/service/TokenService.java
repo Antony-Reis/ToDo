@@ -1,4 +1,4 @@
-package com.antony.todo.security;
+package com.antony.todo.service;
 
 import com.antony.todo.database.model.RefreshTokenEntity;
 import com.antony.todo.database.model.UserEntity;
@@ -6,13 +6,11 @@ import com.antony.todo.database.repository.RefreshTokenRepository;
 import com.antony.todo.database.repository.UserRepository;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import jakarta.validation.constraints.Email;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.Date;

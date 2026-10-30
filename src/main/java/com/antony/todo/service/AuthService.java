@@ -1,4 +1,4 @@
-package com.antony.todo.security;
+package com.antony.todo.service;
 
 import com.antony.todo.database.model.UserEntity;
 import com.antony.todo.database.repository.RefreshTokenRepository;
@@ -52,7 +52,7 @@ public class AuthService {
 
         return new TokenDto(accessToken, refreshToken);
     }
-    public TokenDto refreshTOken(String requestRefreshToken){
+    public TokenDto refreshToken(String requestRefreshToken){
         if (!tokenService.validateRefreshToken(requestRefreshToken)){
             throw new RuntimeException();
             }

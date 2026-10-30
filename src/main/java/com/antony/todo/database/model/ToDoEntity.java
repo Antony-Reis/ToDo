@@ -29,12 +29,10 @@ public class ToDoEntity {
     public ToDoEntity() {
     }
 
-    public ToDoEntity(String title, String description, LocalDateTime createdAt, Boolean isDone, Boolean active, String ownerId) {
+    public ToDoEntity(String title, String description, LocalDateTime createdAt, String ownerId) {
         this.title = title;
         this.description = description;
         this.createdAt = createdAt;
-        this.isDone = isDone;
-        this.active = active;
         this.ownerId = ownerId;
     }
 
