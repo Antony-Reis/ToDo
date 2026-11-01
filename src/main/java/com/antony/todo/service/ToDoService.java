@@ -3,9 +3,14 @@ package com.antony.todo.service;
 import com.antony.todo.database.model.ToDoEntity;
 import com.antony.todo.database.model.UserEntity;
 import com.antony.todo.database.repository.ToDoRepository;
+import com.antony.todo.database.repository.UserRepository;
+import com.antony.todo.exceptions.NotFoundErrorException;
+import com.antony.todo.exceptions.UnauthorizedErrorException;
+import com.antony.todo.security.UserPrincipal;
 import com.antony.todo.utils.MessageDto;
 import com.antony.todo.utils.ToDoDto;
 import com.antony.todo.utils.ToDoResponseDto;
+import org.apache.catalina.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,24 +22,28 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
 public class ToDoService {
     private final ToDoRepository toDoRepository;
+    private final UserRepository userRepository;
 
-    public ToDoService(ToDoRepository toDoRepository) {
+    public ToDoService(ToDoRepository toDoRepository, UserRepository userRepository) {
         this.toDoRepository = toDoRepository;
+        this.userRepository = userRepository;
     }
 
     private String getUserId(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserEntity user = (UserEntity) authentication.getPrincipal();
+        String email = ((UserPrincipal) authentication.getPrincipal()).getUsername();
+        UserEntity user = userRepository.findByEmail(email).orElse(null);
         return user.getId();
     }
 
     private boolean toDoOwnerIdEqualsAuthUserId(ToDoEntity toDo){
-        if (toDo.getOwnerId() == getUserId()){return true;}
+        if (Objects.equals(toDo.getOwnerId(), getUserId())){return true;}
         return false;
     }
 
@@ -61,10 +70,10 @@ public class ToDoService {
     }
 
     @Transactional
-    public MessageDto deleteToDo(String toDoId){
-        ToDoEntity toDo = toDoRepository.findById(toDoId).orElseThrow(RuntimeException::new);
+    public MessageDto deleteToDo(String toDoId) throws UnauthorizedErrorException, NotFoundErrorException{
+        ToDoEntity toDo = toDoRepository.findById(toDoId).orElseThrow(NotFoundErrorException::new);
         if (!toDoOwnerIdEqualsAuthUserId(toDo)){
-            throw new RuntimeException();
+            throw new UnauthorizedErrorException();
         }
 
         if (toDo.getActive()){
@@ -89,10 +98,10 @@ public class ToDoService {
         ));
     }
     @Transactional
-    public MessageDto changeIsDoneStatus(String toDoId){
-        ToDoEntity toDo = toDoRepository.findById(toDoId).orElseThrow(RuntimeException::new);
+    public MessageDto changeIsDoneStatus(String toDoId) throws UnauthorizedErrorException, NotFoundErrorException{
+        ToDoEntity toDo = toDoRepository.findById(toDoId).orElseThrow(NotFoundErrorException::new);
         if (!toDoOwnerIdEqualsAuthUserId(toDo)){
-            throw new RuntimeException();
+            throw new UnauthorizedErrorException();
         }
         toDo.setDone(!toDo.getDone());
         toDoRepository.save(toDo);
@@ -101,10 +110,10 @@ public class ToDoService {
     }
 
     @Transactional
-    public MessageDto updateToDo(String toDoId,ToDoDto toDo){
-        ToDoEntity toDoEntity = toDoRepository.findById(toDoId).orElseThrow(RuntimeException::new);
+    public MessageDto updateToDo(String toDoId,ToDoDto toDo) throws UnauthorizedErrorException, NotFoundErrorException{
+        ToDoEntity toDoEntity = toDoRepository.findById(toDoId).orElseThrow(NotFoundErrorException::new);
         if (!toDoOwnerIdEqualsAuthUserId(toDoEntity)){
-            throw new RuntimeException();
+            throw new UnauthorizedErrorException();
         }
         Optional.ofNullable(toDo.getTitle()).ifPresent(toDoEntity::setTitle);
         Optional.ofNullable(toDo.getDescription()).ifPresent(toDoEntity::setDescription);

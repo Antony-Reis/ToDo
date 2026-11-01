@@ -1,6 +1,7 @@
 package com.antony.todo.security;
 
 import com.antony.todo.database.repository.UserRepository;
+import com.antony.todo.exceptions.NotFoundErrorException;
 import com.antony.todo.service.TokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -33,7 +34,9 @@ public class SecurityFilter extends OncePerRequestFilter {
             String email = tokenService.getEmail(token);
 
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = (UserDetails) userRepository.findByEmail(email).orElse(null);
+                UserDetails userDetails = userRepository.findByEmail(email)
+                        .map(UserPrincipal::new)
+                        .orElse(null);
                 if (userDetails != null &&  tokenService.validateAccessToken(token, userDetails)){
                     UsernamePasswordAuthenticationToken authenticationToken =
                             new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());

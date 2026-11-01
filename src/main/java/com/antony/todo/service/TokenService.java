@@ -67,7 +67,7 @@ public class TokenService {
     }
 
     private String getType(String token){
-        return Jwts.parser().verifyWith(secret).build().parseSignedClaims(token).getPayload().get("type", StringBuffer.class).toString();
+        return Jwts.parser().verifyWith(secret).build().parseSignedClaims(token).getPayload().get("type", String.class);
     }
 
     public Boolean isTokenExpired(String token){
